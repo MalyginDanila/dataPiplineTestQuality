@@ -1,0 +1,56 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:13
+    environment:
+      POSTGRESS_USER: {$POSTGRESS_USER}
+      POSTGRESS_PASSWORD: {$POSTGRESS_PASSWORD}
+      POSTGRESS_DB: {$POSTGRESS_DB}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U airflow"]
+      interval: 1m30s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+  
+  airflow-webserver:
+    build: .
+    command: webserver
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__CORE__LOAD_EXAMPLES: "False"
+      AIRFLOW__CORE__FERNET_KEY: {$AIRFLOW_KEY}
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: {$AIRFLOW_POSTGRES_LINK}
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./src:/opt/airflow/src
+      - ./tests:/opt/airflow/tests
+      - ./data:/opt/airflow/data
+
+  airflow-scheduler:
+    build: .
+    command: scheduler
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__CORE__FERNET_KEY: {$AIRFLOW_KEY}
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: {$AIRFLOW_POSTGRES_LINK}
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./src:/opt/airflow/src
+      - ./tests:/opt/airflow/tests
+      - ./data:/opt/airflow/data
+
+volumes:
+  pgdata:
+
