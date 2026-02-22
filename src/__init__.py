@@ -4,4 +4,4 @@
 
 from .transformations import transform_data, VALID_REGIONS
 
-__all__ = ["transform_sales_data", "VALID_REGIONS"]
+__all__ = ["transform_data", "VALID_REGIONS"]
