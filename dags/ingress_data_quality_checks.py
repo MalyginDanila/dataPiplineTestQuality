@@ -9,8 +9,6 @@ from airflow.models import Variable
 
 from great_expectations.dataset import PandasDataset
 
-from src.transformations import transform_sales_data
-
 DEFAULT_ARGS = {
     "owner": "dataops",
     "depends_on_past": False,
